@@ -20,14 +20,15 @@ extern "C" {
 extern uint8_t _mcp23s17_cs_pin;
 
 void _mcp23s17_init(uint8_t chipSelectPin);
-void _mcp23s17_setReg(uint8_t ctrl_reg, uint8_t chip, uint8_t value);
-uint8_t _mcp23s17_getReg(uint8_t ctrl_reg, uint8_t chip);
+uint8_t _mcp23s17_reg(uint8_t chip, uint8_t ctrl_reg, uint8_t value);
+#define _mcp23s17_setReg(ID, ctrl_reg, value) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _SET, ctrl_reg, value)
+#define _mcp23s17_getReg(ID, ctrl_reg) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _GET, ctrl_reg, 0)
 
-#define _mcp23s17_setA(chip, value) _mcp23s17_setReg(MCP23S17_OLATA, chip, value)
-#define _mcp23s17_setB(chip, value) _mcp23s17_setReg(MCP23S17_OLATB, chip, value)
+#define _mcp23s17_setA(ID, value) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _SET, MCP23S17_OLATA, value)
+#define _mcp23s17_setB(ID, value) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _SET, MCP23S17_OLATB, value)
 
-#define _mcp23s17_getA(chip) _mcp23s17_getReg(MCP23S17_GPIOA, chip)
-#define _mcp23s17_getB(chip) _mcp23s17_getReg(MCP23S17_GPIOB, chip)
+#define _mcp23s17_getA(ID) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _GET, MCP23S17_GPIOA, 0)
+#define _mcp23s17_getB(ID) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _GET, MCP23S17_GPIOB, 0)
 
 
 #ifdef __cplusplus

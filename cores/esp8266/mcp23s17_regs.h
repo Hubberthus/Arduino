@@ -1,16 +1,25 @@
 #ifndef MCP23S17_REGS_H
 #define MCP23S17_REGS_H
 
-// 0x40 = start + (chip address << 1)
+// 0x40 = start + (chip address << 1) + get
 
-#define MCP23S17_CHIP0  0x40
-#define MCP23S17_CHIP1  0x42
-#define MCP23S17_CHIP2  0x44
-#define MCP23S17_CHIP3  0x46
-#define MCP23S17_CHIP4  0x48
-#define MCP23S17_CHIP5  0x4A
-#define MCP23S17_CHIP6  0x4C
-#define MCP23S17_CHIP7  0x4E
+#define MCP23S17_CHIP0_GET  0x41
+#define MCP23S17_CHIP1_GET  0x43
+#define MCP23S17_CHIP2_GET  0x45
+#define MCP23S17_CHIP3_GET  0x47
+#define MCP23S17_CHIP4_GET  0x49
+#define MCP23S17_CHIP5_GET  0x4B
+#define MCP23S17_CHIP6_GET  0x4D
+#define MCP23S17_CHIP7_GET  0x4F
+
+#define MCP23S17_CHIP0_SET  0x40
+#define MCP23S17_CHIP1_SET  0x42
+#define MCP23S17_CHIP2_SET  0x44
+#define MCP23S17_CHIP3_SET  0x46
+#define MCP23S17_CHIP4_SET  0x48
+#define MCP23S17_CHIP5_SET  0x4A
+#define MCP23S17_CHIP6_SET  0x4C
+#define MCP23S17_CHIP7_SET  0x4E
 
 //IOCON.Bank = 0!
 

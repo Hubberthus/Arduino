@@ -35,34 +35,34 @@ void _mcp23s17_init(uint8_t chipSelectPin) {
 	SPI1P &= ~(1<<29);
 
 	//Enable hardware addressing, byte addressing, interrupt mirroring+open drain on all devices
-	_mcp23s17_setReg(MCP23S17_IOCONA, MCP23S17_CHIP0, MCP23S17_SEQOP|MCP23S17_HAEN|MCP23S17_MIRROR|MCP23S17_ODR);
+	_mcp23s17_setReg(0, MCP23S17_IOCONA, MCP23S17_SEQOP|MCP23S17_HAEN|MCP23S17_MIRROR|MCP23S17_ODR);
 
-	_mcp23s17_setReg(MCP23S17_IODIRA, MCP23S17_CHIP0, 0xFF);
-	_mcp23s17_setReg(MCP23S17_GPPUA, MCP23S17_CHIP0, 0x00);
-	_mcp23s17_setReg(MCP23S17_GPINTENA, MCP23S17_CHIP0, 0xFF);
-	_mcp23s17_setReg(MCP23S17_INTCONA, MCP23S17_CHIP0, 0x00);
-	_mcp23s17_getReg(MCP23S17_GPIOA, MCP23S17_CHIP0);
+	_mcp23s17_setReg(0, MCP23S17_IODIRA, 0xFF);
+	_mcp23s17_setReg(0, MCP23S17_GPPUA, 0x00);
+	_mcp23s17_setReg(0, MCP23S17_GPINTENA, 0xFF);
+	_mcp23s17_setReg(0, MCP23S17_INTCONA, 0x00);
+	_mcp23s17_getReg(0, MCP23S17_GPIOA);
 
-	_mcp23s17_setReg(MCP23S17_IODIRB, MCP23S17_CHIP0, 0xFF);
-	_mcp23s17_setReg(MCP23S17_GPPUB, MCP23S17_CHIP0, 0x00);
-	_mcp23s17_setReg(MCP23S17_GPINTENB, MCP23S17_CHIP0, 0xFF);
-	_mcp23s17_setReg(MCP23S17_INTCONB, MCP23S17_CHIP0, 0x00);
-	_mcp23s17_getReg(MCP23S17_GPIOB, MCP23S17_CHIP0);
+	_mcp23s17_setReg(0, MCP23S17_IODIRB, 0xFF);
+	_mcp23s17_setReg(0, MCP23S17_GPPUB, 0x00);
+	_mcp23s17_setReg(0, MCP23S17_GPINTENB, 0xFF);
+	_mcp23s17_setReg(0, MCP23S17_INTCONB, 0x00);
+	_mcp23s17_getReg(0, MCP23S17_GPIOB);
 
-	_mcp23s17_setReg(MCP23S17_IODIRA, MCP23S17_CHIP1, 0xFF);
-	_mcp23s17_setReg(MCP23S17_GPPUA, MCP23S17_CHIP1, 0x00);
-	_mcp23s17_setReg(MCP23S17_GPINTENA, MCP23S17_CHIP1, 0xFF);
-	_mcp23s17_setReg(MCP23S17_INTCONA, MCP23S17_CHIP1, 0x00);
-	_mcp23s17_getReg(MCP23S17_GPIOA, MCP23S17_CHIP1);
+	_mcp23s17_setReg(1, MCP23S17_IODIRA, 0xFF);
+	_mcp23s17_setReg(1, MCP23S17_GPPUA, 0x00);
+	_mcp23s17_setReg(1, MCP23S17_GPINTENA, 0xFF);
+	_mcp23s17_setReg(1, MCP23S17_INTCONA, 0x00);
+	_mcp23s17_getReg(1, MCP23S17_GPIOA);
 
-	_mcp23s17_setReg(MCP23S17_IODIRB, MCP23S17_CHIP1, 0xFF);
-	_mcp23s17_setReg(MCP23S17_GPPUB, MCP23S17_CHIP1, 0x00);
-	_mcp23s17_setReg(MCP23S17_GPINTENB, MCP23S17_CHIP1, 0xFF);
-	_mcp23s17_setReg(MCP23S17_INTCONB, MCP23S17_CHIP1, 0x00);
-	_mcp23s17_getReg(MCP23S17_GPIOB, MCP23S17_CHIP1);
+	_mcp23s17_setReg(1, MCP23S17_IODIRB, 0xFF);
+	_mcp23s17_setReg(1, MCP23S17_GPPUB, 0x00);
+	_mcp23s17_setReg(1, MCP23S17_GPINTENB, 0xFF);
+	_mcp23s17_setReg(1, MCP23S17_INTCONB, 0x00);
+	_mcp23s17_getReg(1, MCP23S17_GPIOB);
 };
 
-void ICACHE_RAM_ATTR _mcp23s17_setReg(uint8_t ctrl_reg, uint8_t chip, uint8_t value) {
+uint8_t ICACHE_RAM_ATTR _mcp23s17_reg(uint8_t chip, uint8_t ctrl_reg, uint8_t value) {
 
 	digitalWrite(_mcp23s17_cs_pin, LOW);
 
@@ -81,28 +81,7 @@ void ICACHE_RAM_ATTR _mcp23s17_setReg(uint8_t ctrl_reg, uint8_t chip, uint8_t va
 	while(SPI1CMD & SPIBUSY) {}
 	
 	digitalWrite(_mcp23s17_cs_pin, HIGH);
-};
-
-uint8_t ICACHE_RAM_ATTR _mcp23s17_getReg(uint8_t ctrl_reg, uint8_t chip) {
-
-	digitalWrite(_mcp23s17_cs_pin, LOW);
 	
-	while(SPI1CMD & SPIBUSY) {}
-
-	SPI1W0 = chip | 1;
-	SPI1CMD |= SPIBUSY;
-	while(SPI1CMD & SPIBUSY) {}
-
-	SPI1W0 = ctrl_reg;
-	SPI1CMD |= SPIBUSY;
-	while(SPI1CMD & SPIBUSY) {}
-
-	SPI1W0 = 0;
-	SPI1CMD |= SPIBUSY;
-	while(SPI1CMD & SPIBUSY) {}
-
-	digitalWrite(_mcp23s17_cs_pin, HIGH);
-
 	return SPI1W0;
 };
 
