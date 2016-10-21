@@ -77,6 +77,13 @@ extern void __pinMode(uint8_t pin, uint8_t mode) {
       GP16E |= 1;
     }
   }
+
+#ifdef __ESP_EXTRA__
+  else {
+	  _gpio_expansion_pin_mode(pin, mode);
+  }
+#endif
+
 }
 
 extern void ICACHE_RAM_ATTR __digitalWrite(uint8_t pin, uint8_t val) {
@@ -88,6 +95,13 @@ extern void ICACHE_RAM_ATTR __digitalWrite(uint8_t pin, uint8_t val) {
     if(val) GP16O |= 1;
     else GP16O &= ~1;
   }
+
+#ifdef __ESP_EXTRA__
+  else {
+	_gpio_expansion_set_pin(pin, val);
+  }
+#endif
+
 }
 
 extern int ICACHE_RAM_ATTR __digitalRead(uint8_t pin) {
@@ -97,6 +111,32 @@ extern int ICACHE_RAM_ATTR __digitalRead(uint8_t pin) {
   } else if(pin == 16){
     return GP16I & 0x01;
   }
+
+#ifdef __ESP_EXTRA__
+  else {
+	uint8_t port;
+	pin -= NUM_INTERNAL_PINS;
+	switch(pin / 8) {
+	case 0:
+		port = PORTA;
+		break;
+	case 1:
+		port = PORTB;
+		break;
+	case 2:
+		port = PORTC;
+		break;
+	case 3:
+		port = PORTD;
+		break;
+	default:
+		return 0;
+	}
+
+	return (port & (1 << (pin % 8)) ? HIGH : LOW);
+  }
+#endif
+
   return 0;
 }
 
@@ -178,6 +218,11 @@ void initPins() {
 
   ETS_GPIO_INTR_ATTACH(interrupt_handler, &interrupt_reg);
   ETS_GPIO_INTR_ENABLE();
+
+#ifdef __ESP_EXTRA__
+  _gpio_expansion_startup();
+#endif
+
 }
 
 extern void pinMode(uint8_t pin, uint8_t mode) __attribute__ ((weak, alias("__pinMode")));

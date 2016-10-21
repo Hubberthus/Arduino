@@ -133,7 +133,7 @@ int32_t spiffs_hal_write(uint32_t addr, uint32_t size, uint8_t *src) {
         }
         else {
             uint8_t buf[UNALIGNED_WRITE_BUFFER_SIZE];
-            for (uint32_t sizeLeft = alignedEnd - alignedBegin; sizeLeft; ) {
+            for (size_t sizeLeft = alignedEnd - alignedBegin; sizeLeft; ) {
                 size_t willCopy = std::min(sizeLeft, sizeof(buf));
                 memcpy(buf, srcLeftover, willCopy);
 
