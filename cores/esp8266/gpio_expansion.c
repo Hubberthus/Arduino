@@ -1,4 +1,4 @@
-#ifdef __ESP_EXTRA__
+#ifdef ARDUINO_ESP_EXTRA
 
 #include "Arduino.h"
 #include "gpio_expansion.h"

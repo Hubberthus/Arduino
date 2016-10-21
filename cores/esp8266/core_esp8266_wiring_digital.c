@@ -24,6 +24,7 @@
 #include "c_types.h"
 #include "eagle_soc.h"
 #include "ets_sys.h"
+#include "gpio_expansion.h"
 
 extern void pwm_stop_pin(uint8_t pin);
 
@@ -78,9 +79,9 @@ extern void __pinMode(uint8_t pin, uint8_t mode) {
     }
   }
 
-#ifdef __ESP_EXTRA__
+#ifdef ARDUINO_ESP_EXTRA
   else {
-	  _gpio_expansion_pin_mode(pin, mode);
+    _gpio_expansion_pin_mode(pin, mode);
   }
 #endif
 
@@ -96,9 +97,9 @@ extern void ICACHE_RAM_ATTR __digitalWrite(uint8_t pin, uint8_t val) {
     else GP16O &= ~1;
   }
 
-#ifdef __ESP_EXTRA__
+#ifdef ARDUINO_ESP_EXTRA
   else {
-	_gpio_expansion_set_pin(pin, val);
+    _gpio_expansion_set_pin(pin, val);
   }
 #endif
 
@@ -112,7 +113,7 @@ extern int ICACHE_RAM_ATTR __digitalRead(uint8_t pin) {
     return GP16I & 0x01;
   }
 
-#ifdef __ESP_EXTRA__
+#ifdef ARDUINO_ESP_EXTRA
   else {
 	uint8_t port;
 	pin -= NUM_INTERNAL_PINS;
@@ -219,7 +220,7 @@ void initPins() {
   ETS_GPIO_INTR_ATTACH(interrupt_handler, &interrupt_reg);
   ETS_GPIO_INTR_ENABLE();
 
-#ifdef __ESP_EXTRA__
+#ifdef ARDUINO_ESP_EXTRA
   _gpio_expansion_startup();
 #endif
 

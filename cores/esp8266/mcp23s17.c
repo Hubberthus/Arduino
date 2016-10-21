@@ -1,4 +1,4 @@
-#ifdef __ESP_EXTRA__
+#ifdef ARDUINO_ESP_EXTRA
 
 #ifdef __cplusplus
 extern "C" {
