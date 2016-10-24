@@ -23,7 +23,7 @@ extern volatile uint8_t PORT_PUUP[];
 extern bool gpio_transaction_ongoing;
 
 void _gpio_expansion_startup();
-void _gpio_expansion_read_all();
+void _gpio_expansion_read_digital();
 void _gpio_expansion_set_pin(uint8_t pin, uint8_t val);
 void _gpio_expansion_pin_mode(uint8_t pin, uint8_t mode);
 

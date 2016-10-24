@@ -1,8 +1,9 @@
+
 #ifdef ARDUINO_ESP_EXTRA
 
 #include "Arduino.h"
 #include "gpio_expansion.h"
-#include "mcp23s17.h"
+#include "gpio_exp_devs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,11 +16,12 @@ volatile uint8_t PORT_DIR[4] = {0xFF, 0xFF, 0xFF, 0xFF};
 volatile uint8_t PORT_PUUP[4] = {0, 0, 0, 0};
 
 void _gpio_expansion_startup() {
-	_mcp23s17_init(CS_GPIO);
-	attachInterrupt(INT_GPIO, _gpio_expansion_read_all, FALLING);
+	_mcp23s17_init(CS_MCP23S17);
+	_mcp3008_init(CS_MCP3008);
+	attachInterrupt(INT_GPIO, _gpio_expansion_read_digital, FALLING);
 }
 
-void _gpio_expansion_read_all() {
+void _gpio_expansion_read_digital() {
 
 	noInterrupts();
 

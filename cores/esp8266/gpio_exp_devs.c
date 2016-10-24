@@ -1,3 +1,4 @@
+
 #ifdef ARDUINO_ESP_EXTRA
 
 #ifdef __cplusplus
@@ -5,13 +6,14 @@ extern "C" {
 #endif
 
 #include "Arduino.h"
-#include "mcp23s17.h"
+#include "gpio_exp_devs.h"
 
 uint8_t _mcp23s17_cs_pin = -1;
+uint8_t _mcp3008_cs_pin = -1;
 
-void _mcp23s17_init(uint8_t chipSelectPin) {
+void _mcp23s17_init(uint8_t mcp23s17_cs_pin) {
 
-	_mcp23s17_cs_pin = chipSelectPin;
+	_mcp23s17_cs_pin = mcp23s17_cs_pin;
 
 	//init SPI bus
 	pinMode(_mcp23s17_cs_pin, OUTPUT);
@@ -84,6 +86,61 @@ uint8_t ICACHE_RAM_ATTR _mcp23s17_reg(uint8_t chip, uint8_t ctrl_reg, uint8_t va
 	
 	return SPI1W0;
 };
+
+_mcp3008_init(uint8_t mcp3008_cs_pin) {
+
+	_mcp3008_cs_pin = mcp3008_cs_pin;
+
+	//init SPI bus
+	pinMode(_mcp3008_cs_pin, OUTPUT);
+	digitalWrite(_mcp3008_cs_pin, HIGH);
+	pinMode(SCK, SPECIAL);
+	pinMode(MISO, SPECIAL);
+	pinMode(MOSI, SPECIAL);
+
+	SPI1C = 0;
+	GPMUX &= ~(1 << 9);
+	SPI1CLK = SPI_CLOCK_DIV4;
+	SPI1U = SPIUMOSI | SPIUDUPLEX | SPIUSSE;
+	SPI1U1 = (7 << SPILMOSI) | (7 << SPILMISO);
+	SPI1C1 = 0;
+
+	//  MSBFIRST bit order
+	SPI1C &= ~(SPICWBO | SPICRBO);
+
+	// SPI_MODE0 data mode:  CPOL: 0  CPHA: 0
+	SPI1U &= ~(SPIUSME);
+	SPI1P &= ~(1<<29);
+}
+
+uint16_t _mcp3008_read(uint8_t pin) {
+
+	uint16_t retVal = -1;
+
+	digitalWrite(_mcp3008_cs_pin, LOW);
+
+	while(SPI1CMD & SPIBUSY) {}
+
+	SPI1W0 = (pin << 2) + 0x60;
+	SPI1CMD |= SPIBUSY;
+	while(SPI1CMD & SPIBUSY) {}
+
+	SPI1W0 = 0;
+	SPI1CMD |= SPIBUSY;
+	while(SPI1CMD & SPIBUSY) {}
+
+	retVal = SPI1W0 << 2;
+
+	SPI1W0 = 0;
+	SPI1CMD |= SPIBUSY;
+	while(SPI1CMD & SPIBUSY) {}
+
+	retVal += (SPI1W0 & 0xC0) >> 6;
+
+	digitalWrite(_mcp3008_cs_pin, HIGH);
+
+	return retVal;
+}
 
 #ifdef __cplusplus
 } // extern "C"

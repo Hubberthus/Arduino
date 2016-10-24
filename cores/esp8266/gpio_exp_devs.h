@@ -1,11 +1,11 @@
-#ifndef MCP23S17_H
-#define MCP23S17_H
+#ifndef GPIO_EXP_DEVS_H
+#define GPIO_EXP_DEVS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "mcp23s17_regs.h"
+#include "gpio_exp_regs.h"
 
 // This defines are not representing the real Divider of the ESP8266
 // the Defines match to an AVR Arduino on 16MHz for better compatibility
@@ -18,6 +18,7 @@ extern "C" {
 #define SPI_CLOCK_DIV128 	0x04fc1001 //125 KHz
 
 extern uint8_t _mcp23s17_cs_pin;
+extern uint8_t _mcp3008_cs_pin;
 
 void _mcp23s17_init(uint8_t chipSelectPin);
 uint8_t _mcp23s17_reg(uint8_t chip, uint8_t ctrl_reg, uint8_t value);
@@ -30,10 +31,12 @@ uint8_t _mcp23s17_reg(uint8_t chip, uint8_t ctrl_reg, uint8_t value);
 #define _mcp23s17_getA(ID) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _GET, MCP23S17_GPIOA, 0)
 #define _mcp23s17_getB(ID) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _GET, MCP23S17_GPIOB, 0)
 
+void _mcp3008_init(uint8_t mcp3008_cs_pin);
+uint16_t _mcp3008_read(uint8_t pin);
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-#endif /* MCP23S17_H */
+#endif /* GPIO_EXP_DEVS_H */
 

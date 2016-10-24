@@ -1,5 +1,5 @@
-#ifndef MCP23S17_REGS_H
-#define MCP23S17_REGS_H
+#ifndef GPIO_EXP_REGS_H
+#define GPIO_EXP_REGS_H
 
 // 0x40 = start + (chip address << 1) + get
 
@@ -56,5 +56,5 @@
 #define MCP23S17_MIRROR  0x40
 #define MCP23S17_BANK    0x80
 
-#endif /* MCP23S17_REGS_H */
+#endif /* GPIO_EXP_REGS_H */
 

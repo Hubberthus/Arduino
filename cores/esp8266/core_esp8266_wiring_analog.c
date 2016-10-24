@@ -24,14 +24,24 @@
 
 #include "wiring_private.h"
 #include "pins_arduino.h"
+#include "gpio_exp_devs.h"
 
 
 extern int __analogRead(uint8_t pin)
 {
-    // accept both A0 constant and ADC channel number
+    // accept both A0 - A8 constants and ADC channel numbers
     if(pin == 17 || pin == 0) {
         return system_adc_read();
     }
+
+#ifdef ARDUINO_ESP_EXTRA
+    else if(pin < A1) {
+        return _mcp3008_read(pin - 1);
+    } else if(pin <= A8) {
+        return _mcp3008_read(pin - A1);
+    }
+#endif
+
     return digitalRead(pin) * 1023;
 }
 
