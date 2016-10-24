@@ -161,6 +161,19 @@ void _gpio_expansion_pin_mode(uint8_t pin, uint8_t mode) {
 	interrupts();
 }
 
+uint16_t _gpio_expansion_analog_read(uint8_t pin) {
+
+	uint16_t retVal = 0;
+
+	noInterrupts();
+
+	retVal = _mcp3008_read(pin);
+
+	interrupts();
+
+	return retVal;
+}
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

@@ -24,7 +24,7 @@
 
 #include "wiring_private.h"
 #include "pins_arduino.h"
-#include "gpio_exp_devs.h"
+#include "gpio_expansion.h"
 
 
 extern int __analogRead(uint8_t pin)
@@ -36,9 +36,9 @@ extern int __analogRead(uint8_t pin)
 
 #ifdef ARDUINO_ESP_EXTRA
     else if(pin < A1) {
-        return _mcp3008_read(pin - 1);
+        return _gpio_expansion_analog_read(pin - 1);
     } else if(pin <= A8) {
-        return _mcp3008_read(pin - A1);
+        return _gpio_expansion_analog_read(pin - A1);
     }
 #endif
 
