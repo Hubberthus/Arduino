@@ -1,3 +1,20 @@
+Arduino core for ESPExtra module based on the "Arduino core for ESP8266 WiFi chip" project
+==========================================================================================
+
+This fork contains an additional module called ESPExtra, which is an ESP8266-based module using MCP23S17 and MCP3008 ICs to allow the usage of additional 32 digital GPIO and 8 analog input pins.
+It can be accessed in the "espextra" branch.
+
+The ESPExtra appears as a new variant which you can choose in Arduino IDE.
+It contains several modifications in the ESP8266 core code, mostly for digital and analog GPIO access. The additional pins can be set/read/written using the standard Arduino functions.
+
+Generally it can be used simply as an Arduino board, just look out for the pin numbering because most of the ESP8266's pins are for internal usage only. Please use the A0...A8, D0...D31 and CS_0...CS_2 constants for accessing the GPIOs.
+
+For more information about the usage of the ESPExtra, please look at the Wiki page:
+(https://github.com/Hubberthus/ESPExtra/wiki)
+
+Below is the original "README.md" file:
+(TODO: Update installation information)
+
 Arduino core for ESP8266 WiFi chip
 ===========================================
 
