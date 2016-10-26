@@ -48,7 +48,7 @@ static const uint8_t CS_0        =  4;  // D2
 static const uint8_t CS_1        =  0;  // D3: flash (pull up on boot)
 static const uint8_t CS_2        = 16;  // D0: user/wake/red LED
 
-static const uint8_t INT_GPIO  =  5;  // D1
+static const uint8_t INT_GPIO    =  5;  // D1
 
 // Expanded pins
 
