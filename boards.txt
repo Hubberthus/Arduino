@@ -456,7 +456,7 @@ huzzah.menu.FlashSize.4M1M.build.spiffs_blocksize=8192
 huzzah.menu.FlashSize.4M1M.build.spiffs_pagesize=256
 
 ##############################################################
-espextra.name=ESPExtra (ESP8266-12E)
+espextra.name=ESPExtra (ESP8266-12)
 
 espextra.upload.tool=esptool
 espextra.upload.speed=115200
