@@ -10025,8 +10025,6 @@ general purpose rectifier, 1 A</description>
 <part name="R1" library="resistor" deviceset="R-EU_" device="0204/5" value="910"/>
 <part name="R2" library="resistor" deviceset="R-EU_" device="0204/5" value="470"/>
 <part name="C1" library="resistor" deviceset="CPOL-EU" device="E2.5-5" value="10u"/>
-<part name="P+7" library="supply1" deviceset="+5V" device=""/>
-<part name="R3" library="resistor" deviceset="R-EU_" device="0204/5" value="4k7"/>
 <part name="GND5" library="supply1" deviceset="GND" device=""/>
 <part name="GND8" library="supply1" deviceset="GND" device=""/>
 </parts>
@@ -10059,8 +10057,6 @@ general purpose rectifier, 1 A</description>
 <instance part="R1" gate="G$1" x="53.34" y="7.62" rot="R90"/>
 <instance part="R2" gate="G$1" x="53.34" y="22.86" rot="R90"/>
 <instance part="C1" gate="G$1" x="-10.16" y="22.86"/>
-<instance part="P+7" gate="1" x="40.64" y="53.34"/>
-<instance part="R3" gate="G$1" x="40.64" y="40.64" rot="R90"/>
 <instance part="GND5" gate="1" x="-10.16" y="10.16"/>
 <instance part="GND8" gate="1" x="45.72" y="20.32"/>
 </instances>
@@ -10092,8 +10088,6 @@ general purpose rectifier, 1 A</description>
 <pinref part="U1" gate="G$1" pin="D1"/>
 <wire x1="40.64" y1="33.02" x2="33.02" y2="33.02" width="0.1524" layer="91"/>
 <label x="35.56" y="33.02" size="1.778" layer="95"/>
-<pinref part="R3" gate="G$1" pin="1"/>
-<wire x1="40.64" y1="33.02" x2="40.64" y2="35.56" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="D16" class="0">
@@ -10707,11 +10701,6 @@ general purpose rectifier, 1 A</description>
 <pinref part="P+6" gate="1" pin="+5V"/>
 <wire x1="-5.08" y1="-5.08" x2="-17.78" y2="-5.08" width="0.1524" layer="91"/>
 <wire x1="-17.78" y1="-5.08" x2="-17.78" y2="5.08" width="0.1524" layer="91"/>
-</segment>
-<segment>
-<pinref part="R3" gate="G$1" pin="2"/>
-<pinref part="P+7" gate="1" pin="+5V"/>
-<wire x1="40.64" y1="45.72" x2="40.64" y2="50.8" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="A1" class="0">

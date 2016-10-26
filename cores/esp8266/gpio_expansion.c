@@ -18,12 +18,15 @@ volatile uint8_t PORT_PUUP[4] = {0, 0, 0, 0};
 void _gpio_expansion_startup() {
 	_mcp23s17_init(CS_MCP23S17);
 	_mcp3008_init(CS_MCP3008);
+	pinMode(INT_GPIO, INPUT_PULLUP);
 	attachInterrupt(INT_GPIO, _gpio_expansion_read_digital, FALLING);
 }
 
 void _gpio_expansion_read_digital() {
 
 	noInterrupts();
+
+	_mcp23s17_init_regs();
 
 	while ( ! digitalRead(INT_GPIO)) {
 		PORTA = _mcp23s17_getA(0);
@@ -38,6 +41,8 @@ void _gpio_expansion_read_digital() {
 void _gpio_expansion_set_pin(uint8_t pin, uint8_t val) {
 
 	noInterrupts();
+
+	_mcp23s17_init_regs();
 
 	pin -= NUM_INTERNAL_PINS;
 	switch(pin / 8) {
@@ -77,6 +82,8 @@ void _gpio_expansion_pin_mode(uint8_t pin, uint8_t mode) {
 	}
 
 	noInterrupts();
+
+	_mcp23s17_init_regs();
 
 	pin -= NUM_INTERNAL_PINS;
 	switch(pin / 8) {
@@ -166,6 +173,8 @@ uint16_t _gpio_expansion_analog_read(uint8_t pin) {
 	uint16_t retVal = 0;
 
 	noInterrupts();
+
+	_mcp3008_init_regs();
 
 	retVal = _mcp3008_read(pin);
 
