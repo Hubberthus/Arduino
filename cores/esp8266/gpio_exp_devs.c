@@ -55,7 +55,7 @@ void _mcp23s17_init(uint8_t mcp23s17_cs_pin) {
 void ICACHE_RAM_ATTR _mcp23s17_init_regs() {
 	SPI1C = 0;
 	GPMUX &= ~(1 << 9);
-	SPI1CLK = SPI_CLOCK_DIV4;
+	SPI1CLK = SPI_CLOCK_10MHz;
 	SPI1U = SPIUMOSI | SPIUDUPLEX | SPIUSSE;
 	SPI1U1 = (7 << SPILMOSI) | (7 << SPILMISO);
 	SPI1C1 = 0;
@@ -71,8 +71,6 @@ void ICACHE_RAM_ATTR _mcp23s17_init_regs() {
 uint8_t ICACHE_RAM_ATTR _mcp23s17_reg(uint8_t chip, uint8_t ctrl_reg, uint8_t value) {
 
 	digitalWrite(_mcp23s17_cs_pin, LOW);
-
-	while(SPI1CMD & SPIBUSY) {}
 
 	SPI1W0 = chip;
 	SPI1CMD |= SPIBUSY;
@@ -126,8 +124,6 @@ uint16_t ICACHE_RAM_ATTR _mcp3008_read(uint8_t pin) {
 	uint16_t retVal = -1;
 
 	digitalWrite(_mcp3008_cs_pin, LOW);
-
-	while(SPI1CMD & SPIBUSY) {}
 
 	SPI1W0 = (pin << 2) + 0x60;
 	SPI1CMD |= SPIBUSY;

@@ -18,6 +18,8 @@ extern "C" {
 #define SPI_CLOCK_DIV64 	0x027c1001 //250 KHz
 #define SPI_CLOCK_DIV128 	0x04fc1001 //125 KHz
 
+#define SPI_CLOCK_10MHz 	0x000C1001
+
 extern uint8_t _mcp23s17_cs_pin;
 extern uint8_t _mcp3008_cs_pin;
 
