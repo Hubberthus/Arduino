@@ -40,6 +40,8 @@ extern "C" {
 #define NUM_ANALOG_INPUTS          (NUM_INTERNAL_ANALOG_INPUTS + NUM_EXTERNAL_ANALOG_INPUTS)
 #define NUM_INTERNAL_PINS          (NUM_INTERNAL_DIGITAL_PINS + NUM_INTERNAL_ANALOG_INPUTS)
 
+#define digitalPinHasPWM(p)        (((p) >= NUM_INTERNAL_PINS && (p) < NUM_DIGITAL_PINS + NUM_INTERNAL_ANALOG_INPUTS)? 1 : 0)
+
 // ESP8266 pins
 
 static const uint8_t CS_MCP23S17 = 15;  // D8: TX1/HCS (pull down on boot)

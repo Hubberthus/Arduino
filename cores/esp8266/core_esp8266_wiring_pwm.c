@@ -23,6 +23,8 @@
 #include "c_types.h"
 #include "eagle_soc.h"
 #include "ets_sys.h"
+#include "gpio_expansion.h"
+#include "gpio_exp_devs.h"
 
 #ifndef F_CPU
 #define F_CPU 800000000L
@@ -30,8 +32,8 @@
 
 struct pwm_isr_table {
     uint8_t len;
-    uint16_t steps[17];
-    uint32_t masks[17];
+    uint16_t steps[16];
+    uint16_t masks[16];
 };
 
 struct pwm_isr_data {
@@ -41,9 +43,9 @@ struct pwm_isr_data {
 
 static struct pwm_isr_data _pwm_isr_data;
 
-uint32_t pwm_mask = 0;
-uint16_t pwm_values[17] = {0,};
-uint32_t pwm_freq = 1000;
+uint16_t pwm_mask = 0;
+uint16_t pwm_values[16] = {0,};
+uint32_t pwm_freq = 100;
 uint32_t pwm_range = PWMRANGE;
 
 uint8_t pwm_steps_changed = 0;
@@ -68,11 +70,11 @@ int pwm_sort_array(uint16_t a[], uint16_t al)
     return bl;
 }
 
-uint32_t pwm_get_mask(uint16_t value)
+uint16_t pwm_get_mask(uint16_t value)
 {
-    uint32_t mask = 0;
+	uint16_t mask = 0;
     int i;
-    for(i=0; i<17; i++) {
+    for(i=0; i<16; i++) {
         if((pwm_mask & (1 << i)) != 0 && pwm_values[i] == value) {
             mask |= (1 << i);
         }
@@ -87,8 +89,8 @@ void prep_pwm_steps()
     }
 
     int pwm_temp_steps_len = 0;
-    uint16_t pwm_temp_steps[17];
-    uint32_t pwm_temp_masks[17];
+    uint16_t pwm_temp_steps[16];
+    uint16_t pwm_temp_masks[16];
     uint32_t range = pwm_range;
 
     if((F_CPU / ESP8266_CLOCK) == 1) {
@@ -96,7 +98,7 @@ void prep_pwm_steps()
     }
 
     int i;
-    for(i=0; i<17; i++) {
+    for(i=0; i<16; i++) {
         if((pwm_mask & (1 << i)) != 0 && pwm_values[i] != 0) {
             pwm_temp_steps[pwm_temp_steps_len++] = pwm_values[i];
         }
@@ -114,7 +116,7 @@ void prep_pwm_steps()
     struct pwm_isr_table *table = &(_pwm_isr_data.tables[!_pwm_isr_data.active]);
     table->len = pwm_temp_steps_len;
     ets_memcpy(table->steps, pwm_temp_steps, (pwm_temp_steps_len + 1) * 2);
-    ets_memcpy(table->masks, pwm_temp_masks, pwm_temp_steps_len * 4);
+    ets_memcpy(table->masks, pwm_temp_masks, pwm_temp_steps_len * 2);
     pwm_multiplier = ESP8266_CLOCK/(range * pwm_freq);
     pwm_steps_changed = 1;
 }
@@ -123,16 +125,21 @@ void ICACHE_RAM_ATTR pwm_timer_isr() //103-138
 {
     struct pwm_isr_table *table = &(_pwm_isr_data.tables[_pwm_isr_data.active]);
     static uint8_t current_step = 0;
-    TEIE &= ~TEIE1;//14
-    T1I = 0;//9
+
     if(current_step < table->len) { //20/21
-        uint32_t mask = table->masks[current_step] & pwm_mask;
-        if(mask & 0xFFFF) {
-            GPOC = mask & 0xFFFF;    //15/21
+    	uint16_t mask = table->masks[current_step] & pwm_mask;
+
+    	_mcp23s17_init_regs();
+
+        if(mask & 0xFF) {
+            PORTA &= ~(mask & 0xFF);
+            _mcp23s17_setA(0, PORTA);
         }
-        if(mask & 0x10000) {
-            GP16O = 0;    //6/13
-        }
+        if(mask & 0xFF00) {
+			PORTB &= ~((mask & 0xFF00) >> 8);
+			_mcp23s17_setB(0, PORTB);
+		}
+
         current_step++;//1
     } else {
         current_step = 0;//1
@@ -140,12 +147,18 @@ void ICACHE_RAM_ATTR pwm_timer_isr() //103-138
             table->len = 0;
             return;
         }
-        if(pwm_mask & 0xFFFF) {
-            GPOS = pwm_mask & 0xFFFF;    //11
-        }
-        if(pwm_mask & 0x10000) {
-            GP16O = 1;    //5/13
-        }
+
+        _mcp23s17_init_regs();
+
+        if(pwm_mask & 0xFF) {
+			PORTA |= (pwm_mask & 0xFF);
+			_mcp23s17_setA(0, PORTA);
+		}
+		if(pwm_mask & 0xFF00) {
+			PORTB |= ((pwm_mask & 0xFF00) >> 8);
+			_mcp23s17_setB(0, PORTB);
+		}
+
         if(pwm_steps_changed) { //12/21
             _pwm_isr_data.active = !_pwm_isr_data.active;
             table = &(_pwm_isr_data.tables[_pwm_isr_data.active]);
@@ -159,18 +172,19 @@ void ICACHE_RAM_ATTR pwm_timer_isr() //103-138
 void pwm_start_timer()
 {
     timer1_disable();
-    ETS_FRC_TIMER1_INTR_ATTACH(NULL, NULL);
-    ETS_FRC_TIMER1_NMI_INTR_ATTACH(pwm_timer_isr);
+    timer1_attachInterrupt(pwm_timer_isr);
     timer1_enable(TIM_DIV1, TIM_EDGE, TIM_SINGLE);
     timer1_write(1);
 }
 
 void ICACHE_RAM_ATTR pwm_stop_pin(uint8_t pin)
 {
+	if ( ! digitalPinHasPWM(pin)) return;
+
     if(pwm_mask){
-        pwm_mask &= ~(1 << pin);
+        pwm_mask &= ~(1 << (pin - NUM_INTERNAL_PINS));
         if(pwm_mask == 0) {
-            ETS_FRC_TIMER1_NMI_INTR_ATTACH(NULL);
+        	timer1_detachInterrupt();
             timer1_disable();
             timer1_isr_init();
         }
@@ -179,25 +193,27 @@ void ICACHE_RAM_ATTR pwm_stop_pin(uint8_t pin)
 
 extern void __analogWrite(uint8_t pin, int value)
 {
+	if ( ! digitalPinHasPWM(pin)) return;
+
     bool start_timer = false;
     if(value == 0) {
         digitalWrite(pin, LOW);
         prep_pwm_steps();
         return;
     }
-    if((pwm_mask & (1 << pin)) == 0) {
+    if((pwm_mask & (1 << (pin - NUM_INTERNAL_PINS))) == 0) {
         if(pwm_mask == 0) {
             memset(&_pwm_isr_data, 0, sizeof(struct pwm_isr_data*));
             start_timer = true;
         }
         pinMode(pin, OUTPUT);
         digitalWrite(pin, LOW);
-        pwm_mask |= (1 << pin);
+        pwm_mask |= (1 << (pin - NUM_INTERNAL_PINS));
     }
     if((F_CPU / ESP8266_CLOCK) == 1) {
         value = (value+1) / 2;
     }
-    pwm_values[pin] = value % (pwm_range + 1);
+    pwm_values[(pin - NUM_INTERNAL_PINS)] = value % (pwm_range + 1);
     prep_pwm_steps();
     if(start_timer) {
         pwm_start_timer();
