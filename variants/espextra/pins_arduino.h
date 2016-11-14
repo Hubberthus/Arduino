@@ -52,6 +52,9 @@ static const uint8_t CS_2        = 16;  // D0: user/wake/red LED
 
 static const uint8_t INT_GPIO    =  5;  // D1
 
+static const uint8_t SDA         =  4;  // CS_0 / D2
+static const uint8_t SCL         =  0;  // CS_1 / D3
+
 // Expanded pins
 
 static const uint8_t LED_BUILTIN = NUM_INTERNAL_PINS;

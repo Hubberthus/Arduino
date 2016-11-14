@@ -42,7 +42,11 @@ extern "C" {
 #define HIGH 0x1
 #define LOW  0x0
 
+#ifdef ARDUINO_ESP_EXTRA
 #define PWMRANGE 255
+#else
+#define PWMRANGE 1023
+#endif
 
 //GPIO FUNCTIONS
 #define INPUT             0x00
