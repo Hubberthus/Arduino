@@ -36,9 +36,9 @@ extern int __analogRead(uint8_t pin)
 
 #ifdef ARDUINO_ESP_EXTRA
     else if(pin < A1) {
-        return _gpio_expansion_analog_read(pin - 1);
+        return _gpio_expansion_analogRead(pin - 1);
     } else if(pin <= A8) {
-        return _gpio_expansion_analog_read(pin - A1);
+        return _gpio_expansion_analogRead(pin - A1);
     }
 #endif
 

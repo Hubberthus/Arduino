@@ -29,25 +29,25 @@ void _mcp23s17_init(uint8_t mcp23s17_cs_pin) {
 
 	_mcp23s17_setReg(0, MCP23S17_IODIRA, 0xFF);
 	_mcp23s17_setReg(0, MCP23S17_GPPUA, 0x00);
-	_mcp23s17_setReg(0, MCP23S17_GPINTENA, 0xFF);
+	_mcp23s17_setReg(0, MCP23S17_GPINTENA, 0x00);
 	_mcp23s17_setReg(0, MCP23S17_INTCONA, 0x00);
 	_mcp23s17_getReg(0, MCP23S17_GPIOA);
 
 	_mcp23s17_setReg(0, MCP23S17_IODIRB, 0xFF);
 	_mcp23s17_setReg(0, MCP23S17_GPPUB, 0x00);
-	_mcp23s17_setReg(0, MCP23S17_GPINTENB, 0xFF);
+	_mcp23s17_setReg(0, MCP23S17_GPINTENB, 0x00);
 	_mcp23s17_setReg(0, MCP23S17_INTCONB, 0x00);
 	_mcp23s17_getReg(0, MCP23S17_GPIOB);
 
 	_mcp23s17_setReg(1, MCP23S17_IODIRA, 0xFF);
 	_mcp23s17_setReg(1, MCP23S17_GPPUA, 0x00);
-	_mcp23s17_setReg(1, MCP23S17_GPINTENA, 0xFF);
+	_mcp23s17_setReg(1, MCP23S17_GPINTENA, 0x00);
 	_mcp23s17_setReg(1, MCP23S17_INTCONA, 0x00);
 	_mcp23s17_getReg(1, MCP23S17_GPIOA);
 
 	_mcp23s17_setReg(1, MCP23S17_IODIRB, 0xFF);
 	_mcp23s17_setReg(1, MCP23S17_GPPUB, 0x00);
-	_mcp23s17_setReg(1, MCP23S17_GPINTENB, 0xFF);
+	_mcp23s17_setReg(1, MCP23S17_GPINTENB, 0x00);
 	_mcp23s17_setReg(1, MCP23S17_INTCONB, 0x00);
 	_mcp23s17_getReg(1, MCP23S17_GPIOB);
 };

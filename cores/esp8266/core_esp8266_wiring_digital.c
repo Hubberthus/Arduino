@@ -81,7 +81,7 @@ extern void __pinMode(uint8_t pin, uint8_t mode) {
 
 #ifdef ARDUINO_ESP_EXTRA
   else {
-    _gpio_expansion_pin_mode(pin, mode);
+    _gpio_expansion_pinMode(pin, mode);
   }
 #endif
 
@@ -99,7 +99,7 @@ extern void ICACHE_RAM_ATTR __digitalWrite(uint8_t pin, uint8_t val) {
 
 #ifdef ARDUINO_ESP_EXTRA
   else {
-    _gpio_expansion_set_pin(pin, val);
+    _gpio_expansion_digitalWrite(pin, val);
   }
 #endif
 
@@ -115,26 +115,7 @@ extern int ICACHE_RAM_ATTR __digitalRead(uint8_t pin) {
 
 #ifdef ARDUINO_ESP_EXTRA
   else {
-	uint8_t port;
-	pin -= NUM_INTERNAL_PINS;
-	switch(pin / 8) {
-	case 0:
-		port = PORTA;
-		break;
-	case 1:
-		port = PORTB;
-		break;
-	case 2:
-		port = PORTC;
-		break;
-	case 3:
-		port = PORTD;
-		break;
-	default:
-		return 0;
-	}
-
-	return (port & (1 << (pin % 8)) ? HIGH : LOW);
+	return _gpio_expansion_digitalRead(pin);
   }
 #endif
 
@@ -190,6 +171,13 @@ extern void ICACHE_RAM_ATTR __attachInterrupt(uint8_t pin, voidFuncPtr userFunc,
     GPIEC = (1 << pin); //Clear Interrupt for this pin
     GPC(pin) |= ((mode & 0xF) << GPCI);//INT mode "mode"
   }
+
+#ifdef ARDUINO_ESP_EXTRA
+  else {
+    _gpio_expansion_attachInterrupt(pin, userFunc, mode);
+  }
+#endif
+
 }
 
 extern void ICACHE_RAM_ATTR __detachInterrupt(uint8_t pin) {
@@ -201,6 +189,13 @@ extern void ICACHE_RAM_ATTR __detachInterrupt(uint8_t pin) {
     handler->mode = 0;
     handler->fn = 0;
   }
+
+#ifdef ARDUINO_ESP_EXTRA
+  else {
+    _gpio_expansion_detachInterrupt(pin);
+  }
+#endif
+
 }
 
 void initPins() {
