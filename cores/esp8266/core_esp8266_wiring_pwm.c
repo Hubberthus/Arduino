@@ -136,7 +136,7 @@ void ICACHE_RAM_ATTR pwm_timer_isr() //103-138
     if(current_step < table->len) { //20/21
         uint32_t mask = table->masks[current_step] & pwm_mask;
 #ifdef ARDUINO_ESP_EXTRA
-        _mcp23s17_init_regs();
+        _mcp23s17_transaction_start();
 
         if(mask & 0xFF) {
             PORTA &= ~(mask & 0xFF);
@@ -161,7 +161,7 @@ void ICACHE_RAM_ATTR pwm_timer_isr() //103-138
             return;
         }
 #ifdef ARDUINO_ESP_EXTRA
-        _mcp23s17_init_regs();
+        _mcp23s17_transaction_start();
 
         if(pwm_mask & 0xFF) {
 			PORTA |= (pwm_mask & 0xFF);

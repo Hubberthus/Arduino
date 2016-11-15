@@ -19,60 +19,55 @@ void _gpio_expansion_startup() {
 	_mcp23s17_init(CS_MCP23S17);
 	_mcp3008_init(CS_MCP3008);
 	pinMode(INT_GPIO, INPUT_PULLUP);
-	attachInterrupt(INT_GPIO, _gpio_expansion_read_digital, FALLING);
+	attachInterrupt(INT_GPIO, _gpio_expansion_read_digital, ONLOW);
 }
 
 void _gpio_expansion_read_digital() {
 
-	noInterrupts();
+	uint32_t savedPS = xt_rsil(15); // stop other interrupts
 
-	_mcp23s17_init_regs();
+	_mcp23s17_transaction_start();
 
-	while ( ! digitalRead(INT_GPIO)) {
-		PORTA = _mcp23s17_getA(0);
-		PORTB = _mcp23s17_getB(0);
-		PORTC = _mcp23s17_getA(1);
-		PORTD = _mcp23s17_getB(1);
-	}
+	PORTA = _mcp23s17_getA(0);
+	PORTB = _mcp23s17_getB(0);
+	PORTC = _mcp23s17_getA(1);
+	PORTD = _mcp23s17_getB(1);
 
-	interrupts();
+	xt_wsr_ps(savedPS);
 }
 
 void _gpio_expansion_set_pin(uint8_t pin, uint8_t val) {
 
-	noInterrupts();
-
-	_mcp23s17_init_regs();
+	uint32_t savedPS = xt_rsil(15); // stop other interrupts
+	uint32_t mask = 0;
 
 	pin -= NUM_INTERNAL_PINS;
-	switch(pin / 8) {
+
+	if (pin >= NUM_EXTERNAL_DIGITAL_PINS) return;
+
+	mask = (1 << pin);
+	if (PORT_DIR[0] & mask) return;
+	if(val) PORT_LIST[0] |= mask;
+	else PORT_LIST[0] &= ~mask;
+
+	_mcp23s17_transaction_start();
+
+	switch(pin >> 3) {
 	case 0:
-		if (PORTA_DIR & (1 << (pin % 8))) return;
-		if(val) PORTA |= (1 << (pin % 8));
-		else PORTA &= ~(1 << (pin % 8));
 		_mcp23s17_setA(0, PORTA);
 		break;
 	case 1:
-		if (PORTB_DIR & (1 << (pin % 8))) return;
-		if(val) PORTB |= (1 << (pin % 8));
-		else PORTB &= ~(1 << (pin % 8));
 		_mcp23s17_setB(0, PORTB);
 		break;
 	case 2:
-		if (PORTC_DIR & (1 << (pin % 8))) return;
-		if(val) PORTC |= (1 << (pin % 8));
-		else PORTC &= ~(1 << (pin % 8));
 		_mcp23s17_setA(1, PORTC);
 		break;
 	case 3:
-		if (PORTD_DIR & (1 << (pin % 8))) return;
-		if(val) PORTD |= (1 << (pin % 8));
-		else PORTD &= ~(1 << (pin % 8));
 		_mcp23s17_setB(1, PORTD);
 		break;
 	}
 
-	interrupts();
+	xt_wsr_ps(savedPS);
 }
 
 void _gpio_expansion_pin_mode(uint8_t pin, uint8_t mode) {
@@ -81,9 +76,9 @@ void _gpio_expansion_pin_mode(uint8_t pin, uint8_t mode) {
 		return;
 	}
 
-	noInterrupts();
+	uint32_t savedPS = xt_rsil(15); // stop other interrupts
 
-	_mcp23s17_init_regs();
+	_mcp23s17_transaction_start();
 
 	pin -= NUM_INTERNAL_PINS;
 	switch(pin / 8) {
@@ -165,20 +160,20 @@ void _gpio_expansion_pin_mode(uint8_t pin, uint8_t mode) {
 		break;
 	}
 
-	interrupts();
+	xt_wsr_ps(savedPS);
 }
 
 uint16_t _gpio_expansion_analog_read(uint8_t pin) {
 
 	uint16_t retVal = 0;
 
-	noInterrupts();
+	uint32_t savedPS = xt_rsil(15); // stop other interrupts
 
-	_mcp3008_init_regs();
+	_mcp3008_transaction_start();
 
 	retVal = _mcp3008_read(pin);
 
-	interrupts();
+	xt_wsr_ps(savedPS);
 
 	return retVal;
 }

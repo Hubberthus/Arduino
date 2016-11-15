@@ -24,7 +24,7 @@ extern uint8_t _mcp23s17_cs_pin;
 extern uint8_t _mcp3008_cs_pin;
 
 void _mcp23s17_init(uint8_t chipSelectPin);
-void _mcp23s17_init_regs();
+void _mcp23s17_transaction_start();
 uint8_t _mcp23s17_reg(uint8_t chip, uint8_t ctrl_reg, uint8_t value);
 #define _mcp23s17_setReg(ID, ctrl_reg, value) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _SET, ctrl_reg, value)
 #define _mcp23s17_getReg(ID, ctrl_reg) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _GET, ctrl_reg, 0)
@@ -36,7 +36,7 @@ uint8_t _mcp23s17_reg(uint8_t chip, uint8_t ctrl_reg, uint8_t value);
 #define _mcp23s17_getB(ID) _mcp23s17_reg(MCP23S17_CHIP ## ID ## _GET, MCP23S17_GPIOB, 0)
 
 void _mcp3008_init(uint8_t mcp3008_cs_pin);
-void _mcp3008_init_regs();
+void _mcp3008_transaction_start();
 uint16_t _mcp3008_read(uint8_t pin);
 
 #ifdef __cplusplus
