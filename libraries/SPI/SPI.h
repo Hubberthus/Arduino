@@ -55,7 +55,9 @@ public:
   SPIClass();
   void begin();
   void end();
+#ifndef ARDUINO_ESP_EXTRA
   void setHwCs(bool use);
+#endif
   void setBitOrder(uint8_t bitOrder);  
   void setDataMode(uint8_t dataMode);
   void setFrequency(uint32_t freq);
@@ -73,7 +75,10 @@ public:
   void transferBytes(uint8_t * out, uint8_t * in, uint32_t size);
   void endTransaction(void);
 private:
+#ifndef ARDUINO_ESP_EXTRA
   bool useHwCs;
+#endif
+  uint32_t savedPS;
   void writeBytes_(uint8_t * data, uint8_t size);
   void transferBytes_(uint8_t * out, uint8_t * in, uint8_t size);
   inline void setDataBits(uint16_t bits);

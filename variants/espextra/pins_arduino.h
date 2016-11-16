@@ -41,6 +41,7 @@ extern "C" {
 #define NUM_INTERNAL_PINS          (NUM_INTERNAL_DIGITAL_PINS + NUM_INTERNAL_ANALOG_INPUTS)
 
 #define digitalPinHasPWM(p)        (((p) >= NUM_INTERNAL_PINS && (p) < NUM_DIGITAL_PINS + NUM_INTERNAL_ANALOG_INPUTS)? 1 : 0)
+#define digitalPinToInterrupt(p)   (((p) < EXTERNAL_NUM_INTERRUPTS) || digitalPinHasPWM(p)? (p) : NOT_AN_INTERRUPT)
 
 // ESP8266 pins
 

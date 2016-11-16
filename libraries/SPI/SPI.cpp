@@ -34,7 +34,9 @@ typedef union {
 } spiClk_t;
 
 SPIClass::SPIClass() {
+#ifndef ARDUINO_ESP_EXTRA
     useHwCs = false;
+#endif
 }
 
 void SPIClass::begin() {
@@ -50,14 +52,17 @@ void SPIClass::begin() {
 }
 
 void SPIClass::end() {
+#ifndef ARDUINO_ESP_EXTRA
     pinMode(SCK, INPUT);
     pinMode(MISO, INPUT);
     pinMode(MOSI, INPUT);
     if(useHwCs) {
         pinMode(SS, INPUT);
     }
+#endif
 }
 
+#ifndef ARDUINO_ESP_EXTRA
 void SPIClass::setHwCs(bool use) {
     if(use) {
         pinMode(SS, SPECIAL); ///< GPIO15
@@ -70,8 +75,10 @@ void SPIClass::setHwCs(bool use) {
     }
     useHwCs = use;
 }
+#endif
 
 void SPIClass::beginTransaction(SPISettings settings) {
+    savedPS = xt_rsil(15); // stop other interrupts
     while(SPI1CMD & SPIBUSY) {}
     setFrequency(settings._clock);
     setBitOrder(settings._bitOrder);
@@ -79,6 +86,7 @@ void SPIClass::beginTransaction(SPISettings settings) {
 }
 
 void SPIClass::endTransaction() {
+    xt_wsr_ps(savedPS);
 }
 
 void SPIClass::setDataMode(uint8_t dataMode) {
