@@ -13,6 +13,23 @@ volatile uint8_t PORT_LIST[4] = {0,};
 volatile uint8_t PORT_DIR[4] = {0xFF,};
 volatile uint8_t PORT_PUUP[4] = {0,};
 volatile uint8_t PORT_INT[4] = {0,};
+volatile uint8_t PORT_INT_CON[4] = {0,};
+volatile uint8_t PORT_INT_DEFVAL[4] = {0,};
+
+#define PORTA_INT PORT_INT[0]
+#define PORTB_INT PORT_INT[1]
+#define PORTC_INT PORT_INT[2]
+#define PORTD_INT PORT_INT[3]
+
+#define PORTA_INT_CON PORT_INT_CON[0]
+#define PORTB_INT_CON PORT_INT_CON[1]
+#define PORTC_INT_CON PORT_INT_CON[2]
+#define PORTD_INT_CON PORT_INT_CON[3]
+
+#define PORTA_INT_DEFVAL PORT_INT_DEFVAL[0]
+#define PORTB_INT_DEFVAL PORT_INT_DEFVAL[1]
+#define PORTC_INT_DEFVAL PORT_INT_DEFVAL[2]
+#define PORTD_INT_DEFVAL PORT_INT_DEFVAL[3]
 
 typedef struct {
   uint8_t mode;
@@ -165,23 +182,27 @@ uint8_t _gpio_expansion_digitalRead(uint8_t pin) {
 
 	switch(pin >> 3) {
 	case 0:
-		if ( ! (PORTA_INT & mask)) {
-			PORTA = _mcp23s17_getA(0);
+		if ( ! (PORT_INT[0] & mask)) {
+			PORT_INT[0] &= ~mask;
+			PORT_INT[0] |= (_mcp23s17_getA(0) & mask);
 		}
 		break;
 	case 1:
-		if ( ! (PORTB_INT & mask)) {
-			PORTB = _mcp23s17_getB(0);
+		if ( ! (PORT_INT[0] & mask)) {
+			PORT_INT[0] &= ~mask;
+			PORT_INT[0] |= (_mcp23s17_getB(0) & mask);
 		}
 		break;
 	case 2:
-		if ( ! (PORTC_INT & mask)) {
-			PORTC = _mcp23s17_getA(1);
+		if ( ! (PORT_INT[0] & mask)) {
+			PORT_INT[0] &= ~mask;
+			PORT_INT[0] |= (_mcp23s17_getA(1) & mask);
 		}
 		break;
 	case 3:
-		if ( ! (PORTD_INT & mask)) {
-			PORTD = _mcp23s17_getB(1);
+		if ( ! (PORT_INT[0] & mask)) {
+			PORT_INT[0] &= ~mask;
+			PORT_INT[0] |= (_mcp23s17_getB(1) & mask);
 		}
 		break;
 	}
@@ -237,73 +258,79 @@ void _gpio_expansion_interrupt_handler() {
 
 	uint32_t savedPS = xt_rsil(15); // stop other interrupts
 	uint8_t i = 0;
-
-	if (( ! PORTA_INT) && ( ! PORTB_INT) && ( ! PORTC_INT) && ( ! PORTD_INT)) {
-		detachInterrupt(INT_GPIO);
-		xt_wsr_ps(savedPS);
-		return;
-	}
-
-	_mcp23s17_transaction_start();
+	uint8_t mask = 0;
+	interrupt_handler_t *handler;
 
 	if (PORTA_INT) {
-		uint8_t port = _mcp23s17_getA(0);
-		for (i = 0; i < 8; ++i) {
-			if ((port & (1 << i)) != (PORTA & (1 << i))) {
-				interrupt_handler_t *handler = &PORT_INT_FUNC[i];
+		_mcp23s17_transaction_start();
+
+		uint8_t port = _mcp23s17_getReg(0, MCP23S17_INTCAPA);
+		for (i = 0, mask = 1; i < 8; ++i, mask <<= 1) {
+			if ((PORTA_INT & mask) && ((port & mask) != (PORTA & mask))) {
+				handler = &PORT_INT_FUNC[i];
 				if (handler->fn &&
 					(handler->mode == CHANGE ||
-					 (handler->mode & 1) == (port & (1 << i)))) {
+					 (handler->mode & 1) == (port & mask))) {
+				  if ((port & mask)) PORTA |= (port & mask);
+				  else PORTA &= ~(port & mask);
 				  handler->fn();
 				}
 			}
 		}
-		PORTA = port;
 	}
 
 	if (PORTB_INT) {
-		uint8_t port = _mcp23s17_getB(0);
-		for (i = 0; i < 8; ++i) {
-			if ((port & (1 << i)) != (PORTB & (1 << i))) {
-				interrupt_handler_t *handler = &PORT_INT_FUNC[i + 8];
+		_mcp23s17_transaction_start();
+
+		uint8_t port = _mcp23s17_getReg(0, MCP23S17_INTCAPB);
+		for (i = 0, mask = 1; i < 8; ++i, mask <<= 1) {
+			if ((PORTB_INT & mask) && ((port & mask) != (PORTB & mask))) {
+				handler = &PORT_INT_FUNC[i + 8];
 				if (handler->fn &&
 					(handler->mode == CHANGE ||
-					 (handler->mode & 1) == (port & (1 << i)))) {
+					 (handler->mode & 1) == (port & mask))) {
+				  if ((port & mask)) PORTB |= (port & mask);
+				  else PORTB &= ~(port & mask);
 				  handler->fn();
 				}
 			}
 		}
-		PORTB = port;
 	}
 
 	if (PORTC_INT) {
-		uint8_t port = _mcp23s17_getA(1);
-		for (i = 0; i < 8; ++i) {
-			if ((port & (1 << i)) != (PORTC & (1 << i))) {
-				interrupt_handler_t *handler = &PORT_INT_FUNC[i + 16];
+		_mcp23s17_transaction_start();
+
+		uint8_t port = _mcp23s17_getReg(1, MCP23S17_INTCAPA);
+		for (i = 0, mask = 1; i < 8; ++i, mask <<= 1) {
+			if ((PORTC_INT & mask) && ((port & mask) != (PORTC & mask))) {
+				handler = &PORT_INT_FUNC[i + 16];
 				if (handler->fn &&
 					(handler->mode == CHANGE ||
-					 (handler->mode & 1) == (port & (1 << i)))) {
+					 (handler->mode & 1) == (port & mask))) {
+				  if ((port & mask)) PORTC |= (port & mask);
+				  else PORTC &= ~(port & mask);
 				  handler->fn();
 				}
 			}
 		}
-		PORTC = port;
 	}
 
 	if (PORTD_INT) {
-		uint8_t port = _mcp23s17_getB(1);
-		for (i = 0; i < 8; ++i) {
-			if ((port & (1 << i)) != (PORTD & (1 << i))) {
-				interrupt_handler_t *handler = &PORT_INT_FUNC[i + 24];
+		_mcp23s17_transaction_start();
+
+		uint8_t port = _mcp23s17_getReg(1, MCP23S17_INTCAPB);
+		for (i = 0, mask = 1; i < 8; ++i, mask <<= 1) {
+			if ((PORTD_INT & mask) && ((port & mask) != (PORTD & mask))) {
+				handler = &PORT_INT_FUNC[i + 24];
 				if (handler->fn &&
 					(handler->mode == CHANGE ||
-					 (handler->mode & 1) == (port & (1 << i)))) {
+					 (handler->mode & 1) == (port & mask))) {
+				  if ((port & mask)) PORTD |= (port & mask);
+				  else PORTD &= ~(port & mask);
 				  handler->fn();
 				}
 			}
 		}
-		PORTD = port;
 	}
 
 	xt_wsr_ps(savedPS);
@@ -338,21 +365,38 @@ void _gpio_expansion_attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode
 	}
 
 	PORT_INT[0] |= mask;
+	if (mode & 0x3) { // FALLING, RISING, CHANGE
+		PORT_INT_CON[0] &= ~mask;
+	} else if (mode & 0x1) {
+		PORT_INT_CON[0] |= mask;
+		PORT_INT_DEFVAL[0] &= ~mask;
+	} else {
+		PORT_INT_CON[0] |= mask;
+		PORT_INT_DEFVAL[0] |= mask;
+	}
 
 	_mcp23s17_transaction_start();
 
 	switch(pin >> 3) {
 	case 0:
 		_mcp23s17_setReg(0, MCP23S17_GPINTENA, PORTA_INT);
+		_mcp23s17_setReg(0, MCP23S17_INTCONA, PORTA_INT_CON);
+		_mcp23s17_setReg(0, MCP23S17_DEFVALA, PORTA_INT_DEFVAL);
 		break;
 	case 1:
 		_mcp23s17_setReg(0, MCP23S17_GPINTENB, PORTB_INT);
+		_mcp23s17_setReg(0, MCP23S17_INTCONB, PORTB_INT_CON);
+		_mcp23s17_setReg(0, MCP23S17_DEFVALB, PORTB_INT_DEFVAL);
 		break;
 	case 2:
 		_mcp23s17_setReg(1, MCP23S17_GPINTENA, PORTC_INT);
+		_mcp23s17_setReg(1, MCP23S17_INTCONA, PORTC_INT_CON);
+		_mcp23s17_setReg(1, MCP23S17_DEFVALA, PORTC_INT_DEFVAL);
 		break;
 	case 3:
 		_mcp23s17_setReg(1, MCP23S17_GPINTENB, PORTD_INT);
+		_mcp23s17_setReg(1, MCP23S17_INTCONB, PORTD_INT_CON);
+		_mcp23s17_setReg(1, MCP23S17_DEFVALB, PORTD_INT_DEFVAL);
 		break;
 	}
 

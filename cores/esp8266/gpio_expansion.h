@@ -6,7 +6,6 @@ typedef void (*voidFuncPtr)(void);
 extern volatile uint8_t PORT_LIST[];
 extern volatile uint8_t PORT_DIR[];
 extern volatile uint8_t PORT_PUUP[];
-extern volatile uint8_t PORT_INT[];
 
 #define PORTA PORT_LIST[0]
 #define PORTB PORT_LIST[1]
@@ -22,11 +21,6 @@ extern volatile uint8_t PORT_INT[];
 #define PORTB_PUUP PORT_PUUP[1]
 #define PORTC_PUUP PORT_PUUP[2]
 #define PORTD_PUUP PORT_PUUP[3]
-
-#define PORTA_INT PORT_INT[0]
-#define PORTB_INT PORT_INT[1]
-#define PORTC_INT PORT_INT[2]
-#define PORTD_INT PORT_INT[3]
 
 void _gpio_expansion_startup();
 uint8_t _gpio_expansion_digitalRead(uint8_t pin);
