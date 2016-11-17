@@ -43,6 +43,14 @@ extern "C" {
 #define digitalPinHasPWM(p)        (((p) >= NUM_INTERNAL_PINS && (p) < NUM_DIGITAL_PINS + NUM_INTERNAL_ANALOG_INPUTS)? 1 : 0)
 #define digitalPinToInterrupt(p)   (((p) < EXTERNAL_NUM_INTERRUPTS) || digitalPinHasPWM(p)? (p) : NOT_AN_INTERRUPT)
 
+#define digitalPinToPort(pin)       (((pin) < NUM_INTERNAL_PINS ? 0 : \
+		((pin) < NUM_DIGITAL_PINS + NUM_INTERNAL_ANALOG_INPUTS ? PORT_LIST[0] : 0)))
+#define digitalPinToBitMask(pin)    ((pin) < NUM_INTERNAL_PINS ? 1UL << (pin) : 1 << (pin - NUM_INTERNAL_PINS))
+#define digitalPinToTimer(pin)      ((pin) < NUM_INTERNAL_PINS ? 0 : -1)
+#define portOutputRegister(port)    ((pin) < NUM_INTERNAL_PINS ? (volatile uint32_t*) &GPO : PORT_LIST[0])
+#define portInputRegister(port)     ((pin) < NUM_INTERNAL_PINS ? (volatile uint32_t*) &GPI : PORT_LIST[0])
+#define portModeRegister(port)      ((pin) < NUM_INTERNAL_PINS ? (volatile uint32_t*) &GPE : PORT_LIST[0])
+
 // ESP8266 pins
 
 static const uint8_t CS_MCP23S17 = 15;  // D8: TX1/HCS (pull down on boot)

@@ -1,6 +1,8 @@
 #ifndef GPIO_EXPANSION_H
 #define GPIO_EXPANSION_H
 
+#include "stdint.h"
+
 typedef void (*voidFuncPtr)(void);
 
 extern volatile uint8_t PORT_LIST[];
