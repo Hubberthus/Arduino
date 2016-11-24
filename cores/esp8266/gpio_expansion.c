@@ -9,27 +9,27 @@
 extern "C" {
 #endif
 
-volatile uint8_t PORT_LIST[4] = {0,};
-volatile uint8_t PORT_DIR[4] = {0xFF,};
-volatile uint8_t PORT_PUUP[4] = {0,};
-volatile uint8_t PORT_INT[4] = {0,};
-volatile uint8_t PORT_INT_CON[4] = {0,};
-volatile uint8_t PORT_INT_DEFVAL[4] = {0,};
+volatile uint32_t PORT_VAL = 0;
+volatile uint32_t PORT_DIR = 0xFFFFFFFF;
+volatile uint32_t PORT_PUUP = 0;
+volatile uint32_t PORT_INT = 0;
+volatile uint32_t PORT_INT_CON = 0;
+volatile uint32_t PORT_INT_DEFVAL = 0;
 
-#define PORTA_INT PORT_INT[0]
-#define PORTB_INT PORT_INT[1]
-#define PORTC_INT PORT_INT[2]
-#define PORTD_INT PORT_INT[3]
+#define PORTA_INT ((uint8_t*)&PORT_INT)[0]
+#define PORTB_INT ((uint8_t*)&PORT_INT)[1]
+#define PORTC_INT ((uint8_t*)&PORT_INT)[2]
+#define PORTD_INT ((uint8_t*)&PORT_INT)[3]
 
-#define PORTA_INT_CON PORT_INT_CON[0]
-#define PORTB_INT_CON PORT_INT_CON[1]
-#define PORTC_INT_CON PORT_INT_CON[2]
-#define PORTD_INT_CON PORT_INT_CON[3]
+#define PORTA_INT_CON ((uint8_t*)&PORT_INT_CON)[0]
+#define PORTB_INT_CON ((uint8_t*)&PORT_INT_CON)[1]
+#define PORTC_INT_CON ((uint8_t*)&PORT_INT_CON)[2]
+#define PORTD_INT_CON ((uint8_t*)&PORT_INT_CON)[3]
 
-#define PORTA_INT_DEFVAL PORT_INT_DEFVAL[0]
-#define PORTB_INT_DEFVAL PORT_INT_DEFVAL[1]
-#define PORTC_INT_DEFVAL PORT_INT_DEFVAL[2]
-#define PORTD_INT_DEFVAL PORT_INT_DEFVAL[3]
+#define PORTA_INT_DEFVAL ((uint8_t*)&PORT_INT_DEFVAL)[0]
+#define PORTB_INT_DEFVAL ((uint8_t*)&PORT_INT_DEFVAL)[1]
+#define PORTC_INT_DEFVAL ((uint8_t*)&PORT_INT_DEFVAL)[2]
+#define PORTD_INT_DEFVAL ((uint8_t*)&PORT_INT_DEFVAL)[3]
 
 typedef struct {
   uint8_t mode;
@@ -68,8 +68,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 	switch(pin >> 3) {
 	case 0:
 		if (mode == OUTPUT) {
-			PORT_DIR[0] &= ~mask;
-			PORT_INT[0] &= ~mask;
+			PORT_DIR &= ~mask;
+			PORT_INT &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
 			handler->fn = 0;
@@ -77,12 +77,12 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			_mcp23s17_setReg(0, MCP23S17_GPINTENA, PORTA_INT);
 			_mcp23s17_setA(0, PORTA);
 		} else {
-			PORT_DIR[0] |= mask;
+			PORT_DIR |= mask;
 			_mcp23s17_setReg(0, MCP23S17_IODIRA, PORTA_DIR);
 			if (mode == INPUT_PULLUP) {
-				PORT_PUUP[0] |= mask;
+				PORT_PUUP |= mask;
 			} else {
-				PORT_PUUP[0] &= ~mask;
+				PORT_PUUP &= ~mask;
 			}
 			_mcp23s17_setReg(0, MCP23S17_GPPUA, PORTA_PUUP);
 			PORTA = _mcp23s17_getA(0);
@@ -90,8 +90,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 		break;
 	case 1:
 		if (mode == OUTPUT) {
-			PORT_DIR[0] &= ~mask;
-			PORT_INT[0] &= ~mask;
+			PORT_DIR &= ~mask;
+			PORT_INT &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
 			handler->fn = 0;
@@ -99,12 +99,12 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			_mcp23s17_setReg(0, MCP23S17_GPINTENB, PORTB_INT);
 			_mcp23s17_setB(0, PORTB);
 		} else {
-			PORT_DIR[0] |= mask;
+			PORT_DIR |= mask;
 			_mcp23s17_setReg(0, MCP23S17_IODIRB, PORTB_DIR);
 			if (mode == INPUT_PULLUP) {
-				PORT_PUUP[0] |= mask;
+				PORT_PUUP |= mask;
 			} else {
-				PORT_PUUP[0] &= ~mask;
+				PORT_PUUP &= ~mask;
 			}
 			_mcp23s17_setReg(0, MCP23S17_GPPUB, PORTB_PUUP);
 			PORTB = _mcp23s17_getB(0);
@@ -112,8 +112,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 		break;
 	case 2:
 		if (mode == OUTPUT) {
-			PORT_DIR[0] &= ~mask;
-			PORT_INT[0] &= ~mask;
+			PORT_DIR &= ~mask;
+			PORT_INT &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
 			handler->fn = 0;
@@ -121,12 +121,12 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			_mcp23s17_setReg(1, MCP23S17_GPINTENA, PORTC_INT);
 			_mcp23s17_setA(1, PORTC);
 		} else {
-			PORT_DIR[0] |= mask;
+			PORT_DIR |= mask;
 			_mcp23s17_setReg(1, MCP23S17_IODIRA, PORTC_DIR);
 			if (mode == INPUT_PULLUP) {
-				PORT_PUUP[0] |= mask;
+				PORT_PUUP |= mask;
 			} else {
-				PORT_PUUP[0] &= ~mask;
+				PORT_PUUP &= ~mask;
 			}
 			_mcp23s17_setReg(1, MCP23S17_GPPUA, PORTC_PUUP);
 			PORTC = _mcp23s17_getA(1);
@@ -134,8 +134,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 		break;
 	case 3:
 		if (mode == OUTPUT) {
-			PORT_DIR[0] &= ~mask;
-			PORT_INT[0] &= ~mask;
+			PORT_DIR &= ~mask;
+			PORT_INT &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
 			handler->fn = 0;
@@ -143,12 +143,12 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			_mcp23s17_setReg(1, MCP23S17_GPINTENB, PORTD_INT);
 			_mcp23s17_setB(1, PORTD);
 		} else {
-			PORT_DIR[0] |= mask;
+			PORT_DIR |= mask;
 			_mcp23s17_setReg(1, MCP23S17_IODIRB, PORTD_DIR);
 			if (mode == INPUT_PULLUP) {
-				PORT_PUUP[0] |= mask;
+				PORT_PUUP |= mask;
 			} else {
-				PORT_PUUP[0] &= ~mask;
+				PORT_PUUP &= ~mask;
 			}
 			_mcp23s17_setReg(1, MCP23S17_GPPUB, PORTD_PUUP);
 			PORTD = _mcp23s17_getB(1);
@@ -173,43 +173,43 @@ uint8_t _gpio_expansion_digitalRead(uint8_t pin) {
 
 	mask = (1 << pin);
 
-	if ( ! (PORT_DIR[0] & mask)) { // pin is OUTPUT, return it's value
+	if ( ! (PORT_DIR & mask)) { // pin is OUTPUT, return it's value
 		xt_wsr_ps(savedPS);
-		return (PORT_LIST[0] & mask);
+		return (PORT_VAL & mask);
 	}
 
 	_mcp23s17_transaction_start();
 
 	switch(pin >> 3) {
 	case 0:
-		if ( ! (PORT_INT[0] & mask)) {
-			PORT_INT[0] &= ~mask;
-			PORT_INT[0] |= (_mcp23s17_getA(0) & mask);
+		if ( ! (PORT_INT & mask)) {
+			PORT_VAL &= ~mask;
+			PORT_VAL |= (_mcp23s17_getA(0) & mask);
 		}
 		break;
 	case 1:
-		if ( ! (PORT_INT[0] & mask)) {
-			PORT_INT[0] &= ~mask;
-			PORT_INT[0] |= (_mcp23s17_getB(0) & mask);
+		if ( ! (PORT_INT & mask)) {
+			PORT_VAL &= ~mask;
+			PORT_VAL |= ((_mcp23s17_getB(0) << 8) & mask);
 		}
 		break;
 	case 2:
-		if ( ! (PORT_INT[0] & mask)) {
-			PORT_INT[0] &= ~mask;
-			PORT_INT[0] |= (_mcp23s17_getA(1) & mask);
+		if ( ! (PORT_INT & mask)) {
+			PORT_VAL &= ~mask;
+			PORT_VAL |= ((_mcp23s17_getA(1) << 16) & mask);
 		}
 		break;
 	case 3:
-		if ( ! (PORT_INT[0] & mask)) {
-			PORT_INT[0] &= ~mask;
-			PORT_INT[0] |= (_mcp23s17_getB(1) & mask);
+		if ( ! (PORT_INT & mask)) {
+			PORT_VAL &= ~mask;
+			PORT_VAL |= ((_mcp23s17_getB(1) << 24) & mask);
 		}
 		break;
 	}
 
 	xt_wsr_ps(savedPS);
 
-	return (PORT_LIST[0] & mask);
+	return ((PORT_VAL & mask) != 0);
 }
 
 void _gpio_expansion_digitalWrite(uint8_t pin, uint8_t val) {
@@ -226,18 +226,18 @@ void _gpio_expansion_digitalWrite(uint8_t pin, uint8_t val) {
 
 	mask = (1 << pin);
 
-	if (PORT_DIR[0] & mask) { // pin is INPUT, update pullup according to value
-		if ((val == LOW) && (PORT_PUUP[0] & mask)) {
+	if (PORT_DIR & mask) { // pin is INPUT, update pullup according to value
+		if ((val == LOW) && (PORT_PUUP & mask)) {
 			_gpio_expansion_pinMode(pin + NUM_INTERNAL_PINS, INPUT);
-		} else if ((val == HIGH) && !(PORT_PUUP[0] & mask)) {
+		} else if ((val == HIGH) && !(PORT_PUUP & mask)) {
 			_gpio_expansion_pinMode(pin + NUM_INTERNAL_PINS, INPUT_PULLUP);
 		}
 		xt_wsr_ps(savedPS);
 		return;
 	}
 
-	if(val) PORT_LIST[0] |= mask;
-	else PORT_LIST[0] &= ~mask;
+	if(val) PORT_VAL |= mask;
+	else PORT_VAL &= ~mask;
 
 	_mcp23s17_transaction_start();
 
@@ -355,7 +355,7 @@ void _gpio_expansion_attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode
 
 	mask = (1 << pin);
 
-	if ( ! (PORT_DIR[0] & mask)) { // pin is OUTPUT
+	if ( ! (PORT_DIR & mask)) { // pin is OUTPUT
 		xt_wsr_ps(savedPS);
 		return;
 	}
@@ -364,20 +364,20 @@ void _gpio_expansion_attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode
 	handler->mode = mode;
 	handler->fn = userFunc;
 
-	if (PORT_INT[0] & mask) { // already an interrupt pin
+	if (PORT_INT & mask) { // already an interrupt pin
 		xt_wsr_ps(savedPS);
 		return;
 	}
 
-	PORT_INT[0] |= mask;
+	PORT_INT |= mask;
 	if (mode & 0x3) { // FALLING, RISING, CHANGE
-		PORT_INT_CON[0] &= ~mask;
+		PORT_INT_CON &= ~mask;
 	} else if (mode & 0x1) {
-		PORT_INT_CON[0] |= mask;
-		PORT_INT_DEFVAL[0] &= ~mask;
+		PORT_INT_CON |= mask;
+		PORT_INT_DEFVAL &= ~mask;
 	} else {
-		PORT_INT_CON[0] |= mask;
-		PORT_INT_DEFVAL[0] |= mask;
+		PORT_INT_CON |= mask;
+		PORT_INT_DEFVAL |= mask;
 	}
 
 	_mcp23s17_transaction_start();
@@ -424,12 +424,12 @@ void _gpio_expansion_detachInterrupt(uint8_t pin) {
 
 	mask = (1 << pin);
 
-	if ( ! (PORT_DIR[0] & mask)) { // pin is OUTPUT
+	if ( ! (PORT_DIR & mask)) { // pin is OUTPUT
 		xt_wsr_ps(savedPS);
 		return;
 	}
 
-	if ( ! (PORT_INT[0] & mask)) { // not an interrupt pin
+	if ( ! (PORT_INT & mask)) { // not an interrupt pin
 		xt_wsr_ps(savedPS);
 		return;
 	}
@@ -438,7 +438,7 @@ void _gpio_expansion_detachInterrupt(uint8_t pin) {
 	handler->mode = 0;
 	handler->fn = 0;
 
-	PORT_INT[0] &= ~mask;
+	PORT_INT &= ~mask;
 
 	_mcp23s17_transaction_start();
 
@@ -457,7 +457,7 @@ void _gpio_expansion_detachInterrupt(uint8_t pin) {
 		break;
 	}
 
-	if (( ! PORTA_INT) && ( ! PORTB_INT) && ( ! PORTC_INT) && ( ! PORTD_INT)) {
+	if ( ! PORT_INT) {
 		detachInterrupt(INT_GPIO);
 	}
 
