@@ -68,8 +68,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 	switch(pin >> 3) {
 	case 0:
 		if (mode == OUTPUT) {
-			PORTA_DIR &= ~mask;
-			PORTA_INT &= ~mask;
+			PORT_DIR[0] &= ~mask;
+			PORT_INT[0] &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
 			handler->fn = 0;
@@ -77,12 +77,12 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			_mcp23s17_setReg(0, MCP23S17_GPINTENA, PORTA_INT);
 			_mcp23s17_setA(0, PORTA);
 		} else {
-			PORTA_DIR |= mask;
+			PORT_DIR[0] |= mask;
 			_mcp23s17_setReg(0, MCP23S17_IODIRA, PORTA_DIR);
 			if (mode == INPUT_PULLUP) {
-				PORTA_PUUP |= mask;
+				PORT_PUUP[0] |= mask;
 			} else {
-				PORTA_PUUP &= ~mask;
+				PORT_PUUP[0] &= ~mask;
 			}
 			_mcp23s17_setReg(0, MCP23S17_GPPUA, PORTA_PUUP);
 			PORTA = _mcp23s17_getA(0);
@@ -90,8 +90,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 		break;
 	case 1:
 		if (mode == OUTPUT) {
-			PORTB_DIR &= ~mask;
-			PORTB_INT &= ~mask;
+			PORT_DIR[0] &= ~mask;
+			PORT_INT[0] &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
 			handler->fn = 0;
@@ -99,12 +99,12 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			_mcp23s17_setReg(0, MCP23S17_GPINTENB, PORTB_INT);
 			_mcp23s17_setB(0, PORTB);
 		} else {
-			PORTB_DIR |= mask;
+			PORT_DIR[0] |= mask;
 			_mcp23s17_setReg(0, MCP23S17_IODIRB, PORTB_DIR);
 			if (mode == INPUT_PULLUP) {
-				PORTB_PUUP |= mask;
+				PORT_PUUP[0] |= mask;
 			} else {
-				PORTB_PUUP &= ~mask;
+				PORT_PUUP[0] &= ~mask;
 			}
 			_mcp23s17_setReg(0, MCP23S17_GPPUB, PORTB_PUUP);
 			PORTB = _mcp23s17_getB(0);
@@ -112,8 +112,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 		break;
 	case 2:
 		if (mode == OUTPUT) {
-			PORTC_DIR &= ~mask;
-			PORTC_INT &= ~mask;
+			PORT_DIR[0] &= ~mask;
+			PORT_INT[0] &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
 			handler->fn = 0;
@@ -121,12 +121,12 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			_mcp23s17_setReg(1, MCP23S17_GPINTENA, PORTC_INT);
 			_mcp23s17_setA(1, PORTC);
 		} else {
-			PORTC_DIR |= mask;
+			PORT_DIR[0] |= mask;
 			_mcp23s17_setReg(1, MCP23S17_IODIRA, PORTC_DIR);
 			if (mode == INPUT_PULLUP) {
-				PORTC_PUUP |= mask;
+				PORT_PUUP[0] |= mask;
 			} else {
-				PORTC_PUUP &= ~mask;
+				PORT_PUUP[0] &= ~mask;
 			}
 			_mcp23s17_setReg(1, MCP23S17_GPPUA, PORTC_PUUP);
 			PORTC = _mcp23s17_getA(1);
@@ -134,8 +134,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 		break;
 	case 3:
 		if (mode == OUTPUT) {
-			PORTD_DIR &= ~mask;
-			PORTD_INT &= ~mask;
+			PORT_DIR[0] &= ~mask;
+			PORT_INT[0] &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
 			handler->fn = 0;
@@ -143,12 +143,12 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			_mcp23s17_setReg(1, MCP23S17_GPINTENB, PORTD_INT);
 			_mcp23s17_setB(1, PORTD);
 		} else {
-			PORTD_DIR |= mask;
+			PORT_DIR[0] |= mask;
 			_mcp23s17_setReg(1, MCP23S17_IODIRB, PORTD_DIR);
 			if (mode == INPUT_PULLUP) {
-				PORTD_PUUP |= mask;
+				PORT_PUUP[0] |= mask;
 			} else {
-				PORTD_PUUP &= ~mask;
+				PORT_PUUP[0] &= ~mask;
 			}
 			_mcp23s17_setReg(1, MCP23S17_GPPUB, PORTD_PUUP);
 			PORTD = _mcp23s17_getB(1);
@@ -173,7 +173,7 @@ uint8_t _gpio_expansion_digitalRead(uint8_t pin) {
 
 	mask = (1 << pin);
 
-	if ( ! (PORT_DIR[0] & mask)) { // pin is OUTPUT
+	if ( ! (PORT_DIR[0] & mask)) { // pin is OUTPUT, return it's value
 		xt_wsr_ps(savedPS);
 		return (PORT_LIST[0] & mask);
 	}
@@ -226,7 +226,12 @@ void _gpio_expansion_digitalWrite(uint8_t pin, uint8_t val) {
 
 	mask = (1 << pin);
 
-	if (PORT_DIR[0] & mask) { // pin is not OUTPUT
+	if (PORT_DIR[0] & mask) { // pin is INPUT, update pullup according to value
+		if ((val == LOW) && (PORT_PUUP[0] & mask)) {
+			_gpio_expansion_pinMode(pin + NUM_INTERNAL_PINS, INPUT);
+		} else if ((val == HIGH) && !(PORT_PUUP[0] & mask)) {
+			_gpio_expansion_pinMode(pin + NUM_INTERNAL_PINS, INPUT_PULLUP);
+		}
 		xt_wsr_ps(savedPS);
 		return;
 	}
