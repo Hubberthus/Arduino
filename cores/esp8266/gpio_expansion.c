@@ -44,6 +44,20 @@ void _gpio_expansion_startup() {
 	pinMode(INT_GPIO, INPUT_PULLUP);
 }
 
+void gpio_expansion_flush() {
+
+	uint32_t savedPS = xt_rsil(15); // stop other interrupts
+
+	_mcp23s17_transaction_start();
+
+	if (PORTA_DIR != 0xFF) _mcp23s17_setA(0, PORTA);
+	if (PORTB_DIR != 0xFF) _mcp23s17_setB(0, PORTB);
+	if (PORTC_DIR != 0xFF) _mcp23s17_setA(1, PORTC);
+	if (PORTD_DIR != 0xFF) _mcp23s17_setB(1, PORTD);
+
+	xt_wsr_ps(savedPS);
+}
+
 void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 
 	uint32_t savedPS = xt_rsil(15); // stop other interrupts
@@ -72,7 +86,7 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			PORT_INT &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
-			handler->fn = 0;
+			handler->fn = NULL;
 			_mcp23s17_setReg(0, MCP23S17_IODIRA, PORTA_DIR);
 			_mcp23s17_setReg(0, MCP23S17_GPINTENA, PORTA_INT);
 			_mcp23s17_setA(0, PORTA);
@@ -85,7 +99,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 				PORT_PUUP &= ~mask;
 			}
 			_mcp23s17_setReg(0, MCP23S17_GPPUA, PORTA_PUUP);
-			PORTA = _mcp23s17_getA(0);
+			PORT_VAL &= ~mask;
+			PORT_VAL |= (_mcp23s17_getA(0) & mask);
 		}
 		break;
 	case 1:
@@ -94,7 +109,7 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			PORT_INT &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
-			handler->fn = 0;
+			handler->fn = NULL;
 			_mcp23s17_setReg(0, MCP23S17_IODIRB, PORTB_DIR);
 			_mcp23s17_setReg(0, MCP23S17_GPINTENB, PORTB_INT);
 			_mcp23s17_setB(0, PORTB);
@@ -107,7 +122,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 				PORT_PUUP &= ~mask;
 			}
 			_mcp23s17_setReg(0, MCP23S17_GPPUB, PORTB_PUUP);
-			PORTB = _mcp23s17_getB(0);
+			PORT_VAL &= ~mask;
+			PORT_VAL |= ((_mcp23s17_getB(0) << 8) & mask);
 		}
 		break;
 	case 2:
@@ -116,7 +132,7 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			PORT_INT &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
-			handler->fn = 0;
+			handler->fn = NULL;
 			_mcp23s17_setReg(1, MCP23S17_IODIRA, PORTC_DIR);
 			_mcp23s17_setReg(1, MCP23S17_GPINTENA, PORTC_INT);
 			_mcp23s17_setA(1, PORTC);
@@ -129,7 +145,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 				PORT_PUUP &= ~mask;
 			}
 			_mcp23s17_setReg(1, MCP23S17_GPPUA, PORTC_PUUP);
-			PORTC = _mcp23s17_getA(1);
+			PORT_VAL &= ~mask;
+			PORT_VAL |= ((_mcp23s17_getA(1) << 16) & mask);
 		}
 		break;
 	case 3:
@@ -138,7 +155,7 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 			PORT_INT &= ~mask;
 			interrupt_handler_t *handler = &PORT_INT_FUNC[pin];
 			handler->mode = 0;
-			handler->fn = 0;
+			handler->fn = NULL;
 			_mcp23s17_setReg(1, MCP23S17_IODIRB, PORTD_DIR);
 			_mcp23s17_setReg(1, MCP23S17_GPINTENB, PORTD_INT);
 			_mcp23s17_setB(1, PORTD);
@@ -151,7 +168,8 @@ void _gpio_expansion_pinMode(uint8_t pin, uint8_t mode) {
 				PORT_PUUP &= ~mask;
 			}
 			_mcp23s17_setReg(1, MCP23S17_GPPUB, PORTD_PUUP);
-			PORTD = _mcp23s17_getB(1);
+			PORT_VAL &= ~mask;
+			PORT_VAL |= ((_mcp23s17_getB(1) << 24) & mask);
 		}
 		break;
 	}
@@ -263,22 +281,22 @@ void _gpio_expansion_interrupt_handler() {
 
 	uint32_t savedPS = xt_rsil(15); // stop other interrupts
 	uint8_t i = 0;
-	uint8_t mask = 0;
+	uint32_t mask = 0;
 	interrupt_handler_t *handler;
 
 	if (PORTA_INT) {
 		_mcp23s17_transaction_start();
 
-		uint8_t port = _mcp23s17_getReg(0, MCP23S17_INTCAPA);
+		uint8_t port = _mcp23s17_getA(0);
 		for (i = 0, mask = 1; i < 8; ++i, mask <<= 1) {
 			if ((PORTA_INT & mask) && ((port & mask) != (PORTA & mask))) {
 				handler = &PORT_INT_FUNC[i];
-				if (handler->fn &&
-					(handler->mode == CHANGE ||
+				if ((handler->mode == CHANGE ||
 					 (handler->mode & 1) == (port & mask))) {
-				  if ((port & mask)) PORTA |= (port & mask);
-				  else PORTA &= ~(port & mask);
-				  handler->fn();
+					PORT_VAL &= ~mask;
+					PORT_VAL |= (port & mask);
+
+				  if (handler->fn) handler->fn();
 				}
 			}
 		}
@@ -287,16 +305,16 @@ void _gpio_expansion_interrupt_handler() {
 	if (PORTB_INT) {
 		_mcp23s17_transaction_start();
 
-		uint8_t port = _mcp23s17_getReg(0, MCP23S17_INTCAPB);
+		uint8_t port = _mcp23s17_getB(0);
 		for (i = 0, mask = 1; i < 8; ++i, mask <<= 1) {
 			if ((PORTB_INT & mask) && ((port & mask) != (PORTB & mask))) {
 				handler = &PORT_INT_FUNC[i + 8];
-				if (handler->fn &&
-					(handler->mode == CHANGE ||
+				if ((handler->mode == CHANGE ||
 					 (handler->mode & 1) == (port & mask))) {
-				  if ((port & mask)) PORTB |= (port & mask);
-				  else PORTB &= ~(port & mask);
-				  handler->fn();
+					PORT_VAL &= ~(mask << 8);
+					PORT_VAL |= ((uint32_t)port & mask) << 8;
+
+				  if (handler->fn) handler->fn();
 				}
 			}
 		}
@@ -305,16 +323,16 @@ void _gpio_expansion_interrupt_handler() {
 	if (PORTC_INT) {
 		_mcp23s17_transaction_start();
 
-		uint8_t port = _mcp23s17_getReg(1, MCP23S17_INTCAPA);
+		uint8_t port = _mcp23s17_getA(1);
 		for (i = 0, mask = 1; i < 8; ++i, mask <<= 1) {
 			if ((PORTC_INT & mask) && ((port & mask) != (PORTC & mask))) {
 				handler = &PORT_INT_FUNC[i + 16];
-				if (handler->fn &&
-					(handler->mode == CHANGE ||
+				if ((handler->mode == CHANGE ||
 					 (handler->mode & 1) == (port & mask))) {
-				  if ((port & mask)) PORTC |= (port & mask);
-				  else PORTC &= ~(port & mask);
-				  handler->fn();
+					PORT_VAL &= ~(mask << 16);
+					PORT_VAL |= ((uint32_t)port & mask) << 16;
+
+				  if (handler->fn) handler->fn();
 				}
 			}
 		}
@@ -323,16 +341,16 @@ void _gpio_expansion_interrupt_handler() {
 	if (PORTD_INT) {
 		_mcp23s17_transaction_start();
 
-		uint8_t port = _mcp23s17_getReg(1, MCP23S17_INTCAPB);
+		uint8_t port = _mcp23s17_getB(1);
 		for (i = 0, mask = 1; i < 8; ++i, mask <<= 1) {
 			if ((PORTD_INT & mask) && ((port & mask) != (PORTD & mask))) {
 				handler = &PORT_INT_FUNC[i + 24];
-				if (handler->fn &&
-					(handler->mode == CHANGE ||
+				if ((handler->mode == CHANGE ||
 					 (handler->mode & 1) == (port & mask))) {
-				  if ((port & mask)) PORTD |= (port & mask);
-				  else PORTD &= ~(port & mask);
-				  handler->fn();
+					PORT_VAL &= ~(mask << 24);
+					PORT_VAL |= ((uint32_t)port & mask) << 24;
+
+				  if (handler->fn) handler->fn();
 				}
 			}
 		}
